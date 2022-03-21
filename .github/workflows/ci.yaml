@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    env:
+      OCAML_JUPYTER_LOG: debug
+    strategy:
+      fail-fast: false
+      matrix:
+        ocaml-compiler:
+          - 4.10.0
+          - 4.11.0
+          - 4.12.0
+          - 4.13.0
+          - ocaml-base-compiler.4.14.0~beta1
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup OCaml
+        uses: ocaml/setup-ocaml@master
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          cache-prefix: opam-${{ matrix.ocaml-compiler }}-
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+            beta: https://github.com/ocaml/ocaml-beta-repository.git
+
+      - name: Install dependencies
+        run: opam install . -y --deps-only --with-test
+
+      - name: Lint for opam files
+        run: opam lint *.opam
+      - name: Check code format
+        run: make check-format
+      - name: Build
+        run: opam exec -- dune build
+
+      ##
+      ## Integration tests
+      ##
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+
+      - name: Install Jupyter
+        run: pip install jupyter
+
+      - name: Install jupyter-archimedes
+        run: opam pin add . -y
+
+      - name: Install kernelspec
+        run: |
+          opam exec -- ocaml-jupyter-opam-genspec
+          jupyter kernelspec install --user --name ocaml "$(opam var share)/jupyter"
+          echo '#use "topfind";;' >> ~/.ocamlinit
+
+      - name: Integration tests
+        run: make test KERNEL_NAME=ocaml
