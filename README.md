@@ -2,7 +2,7 @@
 
 A Jupyter-friendly 2D plotting library based on [Archimedes](http://archimedes.forge.ocamlcore.org/).
 
-`jupyter-archimedes` adds [OCaml Jupyter](akabe.github.io/ocaml-jupyter/) backend to Archimedes, a 2D plotting library written in OCaml. You can plot and embed figures on Jupyter.
+`jupyter-archimedes` adds [OCaml Jupyter](https://akabe.github.io/ocaml-jupyter) backend to Archimedes, a 2D plotting library written in OCaml. You can plot and embed figures on Jupyter.
 
 ![Screenshot](https://akabe.github.io/ocaml-jupyter/images/screenshot.png)
 
